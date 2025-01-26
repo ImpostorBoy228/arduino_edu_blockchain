@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>DuinoChain Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .block { border: 1px solid #ddd; padding: 10px; margin-bottom: 5px; }
+        #chartContainer { background: #f5f5f5; padding: 15px; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <h1>DuinoChain Monitor (PORT 1488)</h1>
+    <div class="grid">
+        <div>
+            <h2>Latest Blocks</h2>
+            <div id="blocks"></div>
+        </div>
+        <div>
+            <h2>Price History</h2>
+            <div id="chartContainer">
+                <canvas id="priceChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const ctx = document.getElementById('priceChart').getContext('2d');
+        const chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'DUCO Price',
+                    data: [],
+                    borderColor: '#4CAF50',
+                    tension: 0.1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'top' }
+                }
+            }
+        });
+
+        const socket = io();
+        let priceData = [];
+
+        socket.on('init', data => {
+            updateBlocks(data.chain);
+            priceData = data.price ? [data.price] : [];
+            updateChart();
+        });
+
+        socket.on('update', data => {
+            if(data.type === 'block') {
+                updateBlocks(data.data);
+            } else if(data.type === 'price') {
+                priceData.push(data.data);
+                updateChart();
+            }
+        });
+
+        function updateBlocks(blocks) {
+            const container = document.getElementById('blocks');
+            container.innerHTML = blocks.map(block => `
+                <div class="block">
+                    <strong>Block #${block.index}</strong><br>
+                    Difficulty: ${block.difficulty}<br>
+                    Hash: ${block.hash}
+                </div>
+            `).join('');
+        }
+
+        function updateChart() {
+            chart.data.labels = Array.from({length: priceData.length}, (_,i) => i+1);
+            chart.data.datasets[0].data = priceData;
+            chart.update();
+        }
+    </script>
+</body>
+</html>
