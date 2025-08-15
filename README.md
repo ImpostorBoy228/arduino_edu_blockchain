@@ -1,6 +1,6 @@
 # Arduino Blockchain Miner
 
-The project is a system for mining blocks using Arduino and a Flask server. The Arduino performs the work of calculating hashes, and the Flask server processes the jobs and accepts decisions from the miner.
+The project is a fucking incomplete system for mining blocks using Arduino and a Flask server. The Arduino performs the work of calculating hashes, and the Flask server processes the jobs and accepts decisions from the miner.
 
 ## Description
 
