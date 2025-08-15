@@ -1,84 +1,83 @@
-
 # Arduino Blockchain Miner
 
-Проект представляет собой систему для майнинга блоков с использованием Arduino и сервера на Flask. Arduino выполняет работу по вычислению хешей, а сервер на Flask обрабатывает задания и принимает решения от майнера.
+The project is a system for mining blocks using Arduino and a Flask server. The Arduino performs the work of calculating hashes, and the Flask server processes the jobs and accepts decisions from the miner.
 
-## Описание
+## Description
 
-Проект включает три основных компонента:
+The project includes three main components:
 
-1. **Arduino-майнер** — устройство на базе Arduino, которое выполняет хеширование блоков.
-2. **Flask-сервер** — сервер для управления блокчейном и обработки решений от майнеров.
-3. **Python-скрипты** — клиент, который взаимодействует с сервером и управляет отправкой заданий и получением решений.
+1. **Arduino-miner** is an Arduino-based device that performs block hashing.
+2. **Flask-server** is a server for managing the blockchain and processing decisions from miners.
+3. **Python scripts** are a client that interacts with the server and manages the submission of tasks and the receipt of solutions.
 
-### Компоненты:
+### Components:
 
-1. **Arduino (майнер)** - использует SHA-1 для вычисления хешей и решает задачи по Proof-of-Work.
-2. **Flask сервер** - управляет цепочкой блоков, проверяет решения и отправляет задания на майнинг.
-3. **Python клиенты** - получают задания от сервера и отправляют решения, используя алгоритм Proof-of-Work.
+1. **Arduino (miner)** - uses SHA-1 to calculate hashes and solves Proof-of-Work problems.
+2. **Flask server** - manages the blockchain, checks solutions, and sends mining tasks.
+3. **Python clients** - receive tasks from the server and send solutions using the Proof-of-Work algorithm.
 
-## Требования
+## Requirements
 
-- **Arduino Uno** или совместимая плата
+- **Arduino Uno** or compatible board
 - **Arduino IDE**
-- **Flask** и **Flask-SocketIO** для серверной части
-- **Python** для работы с клиентом
-- **Библиотеки**:
+- **Flask** and **Flask-SocketIO** for the server part
+- **Python** for working with the client
+- **Libraries**:
     - `pyserial`
     - `requests`
     - `hashlib`
     - `time`
     - `json`
 
-## Установка
+## Installation
 
-1. Скачайте или клонируйте репозиторий.
+1. Download or clone the repository.
 
 ```bash
 git clone https://github.com/your-username/arduino-blockchain-miner.git
 ```
 
-2. Загрузите код на вашу Arduino с помощью Arduino IDE.
-    - Подключите Arduino к компьютеру.
-    - Откройте проект в Arduino IDE и загрузите код на устройство.
-    - Убедитесь, что выбран правильный порт.
+2. Upload the code to your Arduino using the Arduino IDE.
+    - Connect your Arduino to your computer.
+    - Open the project in the Arduino IDE and upload the code to your device.
+    - Make sure that the correct port is selected.
 
-3. Установите зависимости для серверной части:
+3. Install the dependencies for the server side:
 
 ```bash
 pip install flask flask-socketio requests
 ```
 
-4. Запустите Flask-сервер:
+4. Start the Flask server:
 
 ```bash
 python server.py
 ```
 
-5. Запустите Python-скрипт для клиента:
+5. Start the Python script for the client:
 
 ```bash
 python arduino_client.py
 ```
 
-6. После этого Arduino начнёт выполнять майнинг, а сервер будет обрабатывать результаты.
+6. After that, the Arduino will start mining, and the server will process the results.
 
-## Как это работает
+## How it works
 
-1. **Arduino** запрашивает задания от сервера (параметры блока, сложность).
-2. **Arduino** выполняет вычисления (генерация хешей) и пытается найти подходящий nonce.
-3. После нахождения подходящего nonce, **Arduino** отправляет решение на сервер.
-4. **Flask-сервер** проверяет решение (проверка хеша) и, если оно верно, добавляет новый блок в цепочку.
+1. **Arduino** requests tasks from the server (block parameters, difficulty).
+2. **Arduino** performs calculations (hash generation) and tries to find a suitable nonce.
+3. After finding a suitable nonce, **Arduino** sends the solution to the server.
+4. **Flask-server** checks the solution (hash verification) and, if it is correct, adds the new block to the chain.
 
-## Взаимодействие с сервером
+## Interaction with the server
 
-- **GET /mine** — запрос для получения задания на майнинг.
-- **POST /submit** — отправка решения от майнера.
-- **GET /chain** — получение текущей цепочки блоков.
+- **GET /mine** - request to get a mining job.
+- **POST /submit** - sending a solution from the miner.
+- **GET /chain** - getting the current block chain.
 
-## Пример работы клиента
+## Client example
 
-Клиент на Python будет выполнять майнинг блоков, запросив задания с сервера и отправляя найденные решения:
+The Python client will mine blocks by requesting tasks from the server and sending the found solutions:
 
 ```python
 import requests
@@ -92,17 +91,17 @@ def mine_block():
         response = requests.get(f"{SERVER_URL}/mine", timeout=5)
         response.raise_for_status()
         job = response.json()
-        print(f"Получено задание: {job}")
+        print(f"Received job: {job}")
     except requests.exceptions.RequestException as e:
-        print(f"Ошибка при получении задания: {str(e)}")
+        print(f"Error while receiving the job: {str(e)}")
         return None
     except json.JSONDecodeError as e:
-        print(f"Ошибка декодирования JSON: {response.text}")
+        print(f"JSON decoding error: {response.text}")
         return None
 
     target = '0' * job['difficulty']
     nonce = 0
-    print(f"Начало майнинга. Цель: {target}")
+    print(f"Starting mining. Target: {target}")
 
     while True:
         input_data = json.dumps({
@@ -117,7 +116,7 @@ def mine_block():
         hash_result = hashlib.sha1(input_data).hexdigest()
 
         if hash_result.startswith(target):
-            print(f"Найден nonce: {nonce}, хеш: {hash_result[:16]}...")
+            print(f"Found nonce: {nonce}, hash: {hash_result[:16]}...")
             try:
                 solution = {
                     "index": job['index'],
@@ -127,8 +126,8 @@ def mine_block():
                     "data": "Mined Block",
                     "timestamp": int(time.time())
                 }
-                print(f"Отправляем решение: {solution}")
-                response = requests.post(
+                print(f"Sending a solution: {solution}")
+response = requests.post(
                     f"{SERVER_URL}/submit",
                     json=solution,
                     timeout=5
@@ -136,9 +135,9 @@ def mine_block():
                 response.raise_for_status()
                 return response.json()
             except requests.exceptions.RequestException as e:
-                print(f"Ошибка при отправке: {str(e)}")
-                print(f"Ответ сервера: {response.text}")
-                return None
+                print(f"Error when sending: {str(e)}")
+print(f"Server response: {response.text}")
+return None
 
         nonce += 1
 
@@ -146,15 +145,13 @@ if __name__ == "__main__":
     while True:
         result = mine_block()
         if result:
-            print(f"Результат: {result}")
+            print(f"Result: {result}")
         else:
-            print("Майнинг прерван. Повтор через 5 секунд...")
+            print("Mining interrupted. Retry in 5 seconds...")
             time.sleep(5)
 ```
 
-## Лицензия
+## License
 
-Этот проект распространяется под лицензией MIT. См. [LICENSE](LICENSE) для подробностей.
+This project is distributed under the MIT license. See [LICENSE](LICENSE) for details.
 ```
-
-Этот файл `README.md` предоставит чёткие инструкции для установки и запуска вашего проекта.
